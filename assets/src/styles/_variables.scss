@@ -1,0 +1,23 @@
+$primary: #343843;
+$primary-dark: #22242C;
+$primary-light: #7A8298;
+$red: #CE5780;
+$blue: #689FBC;
+$green: #91A844;
+$yellow: #E0B36A;
+
+$border-radius: 8px;
+
+$max-width: 62.5vh;
+$gutter: 10px;
+
+$max-width-eq: '(#{$max-width} - (#{$gutter} * 9)) / 6';
+$max-height-eq: '(#{$max-width-eq}) * 1.4';
+
+$width-eq: '(100vw - (#{$gutter} * 9)) / 6';
+$height-eq: '(#{$width-eq}) * 1.4';
+
+$card-width: calc(#{$width-eq});
+$card-height: calc(#{$height-eq});
+$max-card-width: calc(#{$max-width-eq});
+$max-card-height: calc(#{$max-height-eq});

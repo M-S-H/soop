@@ -1,0 +1,77 @@
+@import "~@aetherial/aetherial-styles/aetherial";
+@import "./variables";
+@import "./mixins";
+@import "./animations";
+@import "./home.scss";
+@import "./game.scss";
+@import "./card.scss";
+@import "./spinner.scss";
+@import "./pile.scss";
+
+$soop-theme: (
+  // Typeography
+  font-family-ui: ('moon', sans-serif),
+  font-family-base: ('moon', sans-serif),
+
+  border-radius: $border-radius,
+  button-group-height: 36px,
+
+  // Colors
+  primary-color: $blue,
+  secondary-color: $blue,
+  success-color: $green,
+  warning-color: $yellow,
+  error-color: $red,
+  dark-gray-color: #444,
+  medium-gray-color: #B9BED2,
+  light-gray-color: $primary-light,
+  white-color: white,
+  black-color: black,
+  color-palette: (primary, secondary, success, warning, error, dark-gray, medium-gray, light-gray, white, black),
+
+  modal-shadow: (0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22)),
+  modal-heading-color: white,
+  modal-header-padding: 10px 20px 10px 20px,
+  modal-content-padding: 10px 20px,
+  modal-actions-padding: 10px 20px 10px 20px,
+  modal-divider: 1px solid #F1F2F7,
+  large-modal-width: 1200px,
+);
+@include aetherial($soop-theme);
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-overflow-scrolling: touch;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'moon', sans-serif !important;
+  width: 100%;
+  height: 100%;
+  background: $primary-light;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  background: $primary;
+}
+
+/* 
+  ##Device = Desktops
+  ##Screen = 1281px to higher resolution desktops
+*/
+
+@media (min-width: 801px) {
+  #app {
+    margin: auto;
+    max-width: $max-width;
+    box-shadow: 0 0 20px rgba(black, 0.2);
+  }
+}
