@@ -25,6 +25,12 @@ export default (Vue.extend({
     }
   },
 
+  data () {
+    return {
+      hasVibratedOnHover: false
+    }
+  },
+
   mounted () {
     if (!this.disableDrag) {
       const hammer = new Hammer(this.$el as HTMLElement)
@@ -66,11 +72,13 @@ export default (Vue.extend({
 
       if (this.card.value === 1 && playArea && !pile) {
         playArea.classList.add('hover-highlight')
+        this.tryVibrate()
         return
       }
 
       if (this.card.location === 'stack' && rowSlot && rowSlot.children.length === 2) {
         rowSlot.classList.add('hover-highlight')
+        this.tryVibrate()
         return
       }
 
@@ -78,8 +86,12 @@ export default (Vue.extend({
         const pileVue = (pile as any).__vue__
         if (pileVue.pile.color === this.card.color && pileVue.pile.currentValue === this.card.value - 1) {
           pile.classList.add('hover-highlight')
+          this.tryVibrate()
+          return
         }
       }
+
+      this.hasVibratedOnHover = false
     },
 
     removeHighlights () {
@@ -87,6 +99,16 @@ export default (Vue.extend({
       oldHilights.forEach(element => {
         element.classList.remove('hover-highlight')
       })
+    },
+
+    tryVibrate () {
+      if (!this.hasVibratedOnHover) {
+        console.log('set')
+        if (navigator && navigator.vibrate) {
+          navigator.vibrate(30)
+        }
+        this.hasVibratedOnHover = true
+      }
     }
   }
 }))

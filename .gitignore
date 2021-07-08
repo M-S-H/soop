@@ -36,3 +36,5 @@ soup-*.tar
 /config/*.secret.exs
 
 .DS_Store
+
+*.ai
