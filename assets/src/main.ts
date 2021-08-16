@@ -1,8 +1,10 @@
 import Vue from 'vue'
+import Vuex from 'vuex'
 import App from './App.vue'
 import './registerServiceWorker'
 import router from './router'
 import axios from 'axios'
+import store from '../src/store/store'
 import { Socket } from 'phoenix'
 import AvComponents from '@aetherial/aetherial-vue'
 import './styles/application.scss'
@@ -22,5 +24,6 @@ Vue.config.productionTip = false
 
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')

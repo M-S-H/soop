@@ -1,7 +1,7 @@
 defmodule SoupWeb.SessionChannel do
   use SoupWeb, :channel
 
-  alias Soup.Game.{Player, Hand, GameSession, Pile, Card} 
+  alias Soup.Game.{Player, Hand, GameSession, Pile, Card}
 
   @doc """
   Hnadles request to join session channel
@@ -11,7 +11,7 @@ defmodule SoupWeb.SessionChannel do
       socket
       |> assign(:session_id, session_id)
       |> assign(:player_id, params["player_id"])
-    
+
     {:ok, socket}
   end
 
@@ -87,7 +87,7 @@ defmodule SoupWeb.SessionChannel do
     {:reply, {:ok, Map.from_struct(hand)}, socket}
   end
 
-  
+
   @doc """
   Notifiy all players that the round has started
   """
@@ -110,22 +110,22 @@ defmodule SoupWeb.SessionChannel do
 
     GameSession.set_all_player_scores(socket.assigns.session_id)
     GameSession.rank_players(socket.assigns.session_id)
-    
+
     players = GameSession.get_all_players(socket.assigns.session_id)
     results = %{
-      winner: winning_player.id,
-      top_player: (players |> Enum.sort_by(fn p -> p.score end) |> List.first).id,
-      player_results: Enum.map(players, fn p -> %{
-        player_id: p.id,
+      roundWinner: winning_player.id,
+      topPlayer: (players |> Enum.sort_by(fn p -> p.score end) |> List.first).id,
+      playerResults: Enum.map(players, fn p -> %{
+        playerId: p.id,
         stack: p.stack,
-        cards_played: p.cards_played,
-        round_score: (p.stack * -2) + p.cards_played,
-        new_score: p.score,
+        cardsPlayed: p.cards_played,
+        roundScore: (p.stack * -2) + p.cards_played,
+        newScore: p.score,
         rank: p.rank,
         delta: p.delta
       } end)
     }
-    
+
     Redix.command(:redix, ["HSET", socket.assigns.session_id, "state", "waiting_for_players"])
     GameSession.clear_all_piles(socket.assigns.session_id)
 
@@ -142,6 +142,7 @@ defmodule SoupWeb.SessionChannel do
 
 
   def handle_in("end_game", _, socket) do
+    IO.puts(socket.assigns.session_id)
     GameSession.remove_game(socket.assigns.session_id)
     broadcast(socket, "game_ended", %{})
   end

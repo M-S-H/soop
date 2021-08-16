@@ -9,7 +9,7 @@
 <script lang="ts">
 import Vue, { PropType } from 'vue'
 import Hammer from 'hammerjs'
-import { Card } from '../models/Card'
+import { Card, CardDragEvent } from '../models/Card'
 
 export default (Vue.extend({
   name: 'Card',
@@ -37,7 +37,9 @@ export default (Vue.extend({
 
       hammer.add(new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 0 }))
 
-      hammer.on('pan', (ev) => {
+      hammer.on('pan', (e: HammerInput) => {
+        const ev = e as CardDragEvent
+
         this.removeHighlights()
 
         const elem = ev.target as HTMLElement
@@ -53,10 +55,10 @@ export default (Vue.extend({
         this.addHightlights(cardCenter.x, cardCenter.y)
 
         if (ev.isFinal) {
-          this.removeHighlights();
+          this.removeHighlights()
 
-          (ev as any).card = this.card;
-          (ev as any).cardCenter = cardCenter
+          ev.card = this.card
+          ev.cardCenter = cardCenter
           this.$emit('finishedDrag', ev)
         }
       })

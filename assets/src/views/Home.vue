@@ -90,6 +90,8 @@ export default Vue.extend({
       this.$router.push('/game')
     }
 
+    this.$store.dispatch('clearState')
+
     this.active = true
 
     for (let i = 0; i < 16; i++) {
