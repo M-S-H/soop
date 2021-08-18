@@ -204,6 +204,7 @@ export default class OnlineGameController implements GameController {
     if (!gameOver) {
       this.saveState()
     } else {
+      this.channel.leave()
       localStorage.clear()
     }
   }
@@ -212,10 +213,8 @@ export default class OnlineGameController implements GameController {
    * Handles the response that the game has been ended
    */
   private handleGameEnded () {
-    console.log('handleGameEnded')
     this.store.dispatch('gameEnded')
     this.channel.leave()
-    console.log('from game ended')
     localStorage.clear()
   }
 

@@ -146,4 +146,11 @@ defmodule SoupWeb.SessionChannel do
     GameSession.remove_game(socket.assigns.session_id)
     broadcast(socket, "game_ended", %{})
   end
+
+  def handle_in("moved_from_stack", _params, socket) do
+    Player.subtract_player_stack(socket.assigns.player_id)
+    # GameSession
+    # Games.subtract_player_stack(socket.assigns.player_id)
+    {:noreply, socket}
+  end
 end
