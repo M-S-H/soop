@@ -274,7 +274,9 @@ const store: StoreOptions<State> = {
      * Adds a player to the state
      */
     addPlayer ({ commit }, player: Player) {
-      commit('addPlayer', player)
+      if (!this.state.players.find(p => p.id === player.id)) {
+        commit('addPlayer', player)
+      }
     },
 
     /**

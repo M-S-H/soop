@@ -92,7 +92,7 @@
             <div class="modal-header">{{ currentRound === 0 ? 'Players Joined' : 'Leaderboard' }}</div>
             <ul class="player-standings">
               <transition-group name="ps">
-                <li class="player-standing" v-for="player in players" :key="player.id">
+                <li class="player-standing" v-for="player in displayPlayers" :key="player.id">
                   <span class="placement" :style="{ background: player.color }">{{ currentRound !== 0 ? player.rank + 1 : '' }}</span>
                   <span class="player-name">{{ player.name }}</span>
 
@@ -215,7 +215,7 @@ const comp = Vue.extend({
       initialized: false,
       showMenu: false,
       showSoopScreen: false,
-      sortedPlayers: [] as Array<Player>
+      playerRanks: {} as { [key: string]: number }
     }
   },
 
@@ -240,6 +240,18 @@ const comp = Vue.extend({
   computed: {
     activePiles (): Array<Pile> {
       return this.piles.filter((p: Pile) => p.currentValue !== 10)
+    },
+
+    sortedPlayers (): Array<Player> {
+      return cloneDeep(this.players).sort((a: Player, b: Player) => {
+        if (this.playerRanks[a.id] < this.playerRanks[b.id]) {
+          return -1
+        } else if (this.playerRanks[b.id] > this.playerRanks[a.id]) {
+          return 1
+        } else {
+          return 0
+        }
+      })
     },
 
     displayPlayers (): Array<Player> {
@@ -272,7 +284,7 @@ const comp = Vue.extend({
     sessionState (newValue: SessionState, oldValue: SessionState) {
       if (oldValue === 'waiting_for_players' && newValue === 'in_progress') {
         this.startCountdown()
-        this.sortPlayers = cloneDeep(this.players)
+        // this.sortedPlayers = cloneDeep(this.players)
       } else if (oldValue === 'in_progress' && newValue === 'waiting_for_players') {
         this.showEndOfRound()
       }
@@ -329,6 +341,7 @@ const comp = Vue.extend({
         this.showSoopScreen = false
 
         setTimeout(() => {
+          this.sortPlayers()
           // results.player_results.forEach(r => {
           //   const player = this.players.find(p => p.id === r.player_id)
           //   if (!player) {
@@ -360,7 +373,12 @@ const comp = Vue.extend({
     },
 
     sortPlayers () {
-      // const copy = clone(this.players).sort((a, b) => {
+      const newPlayerRansk = {} as any
+      this.playerRanks = this.players.forEach((p: Player) => {
+        newPlayerRansk[p.id] = p.rank
+      })
+      // this.players
+      // const copy = cloneDeep(this.players).sort((a: Player, b: Player) => {
       //   if (a.rank < b.rank) {
       //     return -1
       //   } else if (b.rank > a.rank) {
@@ -370,7 +388,9 @@ const comp = Vue.extend({
       //   }
       // })
 
-      // this.players = copy
+      this.playerRanks = newPlayerRansk
+
+      // this.sortedPlayers = copy
     },
 
     /**
@@ -378,33 +398,6 @@ const comp = Vue.extend({
      */
     flip () {
       this.gameController.flip()
-    },
-
-    // Fetch the current session from the server
-    getSession () {
-      // this.$axios.get(`/game/${this.sessionId}`).then(resp => {
-      //   // Copy game information
-      //   this.sessionState = resp.data.game.state
-      //   this.players = resp.data.players
-      //   this.piles = resp.data.piles
-      //   this.currentRound = resp.data.game.current_round
-      //   this.totalRounds = resp.data.game.total_rounds
-
-      //   // Find current player
-      //   const playerId = localStorage.getItem('soup:playerId')
-      //   const player = this.players.find(p => p.id === playerId)
-      //   if (player) {
-      //     this.player = player
-      //   }
-
-      //   this.loadState()
-      //   this.connectToWebsocket()
-      // }).catch((e: AxiosError) => {
-      //   if (e.response && e.response.status === 404) {
-      //     localStorage.clear()
-      //     this.$router.push('/')
-      //   }
-      // })
     },
 
     /**
@@ -453,23 +446,6 @@ const comp = Vue.extend({
       } else {
         this.animateBack(draggedElem)
       }
-
-      // this.animateBack(draggedElem)
-
-      // const dropVue = (dropElem as any).__vue__ as Vue
-      // console.log($event)
-
-      // if (dropVue && dropVue.$options.name === 'Pile') {
-      //   this.playCardOnPile(draggedElem, dropVue.pile)
-      // } else if (dropElem.classList.contains('row-slot')) {
-      //   this.playCardOnRow(draggedElem, dropElem)
-      // } else if ($event.card.value === 1 && (dropElem.classList.contains('play-area') || dropElem.classList.contains('play-area-container'))) {
-      //   this.startNewPile(draggedElem, $event.card as Card)
-      // } else {
-      //   this.animateBack(draggedElem)
-      // }
-
-      // this.animateBack(draggedElem)
     },
 
     // Mark status as ready
@@ -477,18 +453,9 @@ const comp = Vue.extend({
       this.gameController.markReady()
     },
 
-    // Notify other players of joining
-    notifyPlayers () {
-      // this.channel.push('player_joined', { playerId: this.player.id })
-    },
-
     snapBack (elem: HTMLElement) {
       elem.style.transform = 'translate(0,0)'
       elem.classList.remove('dragging')
-    },
-
-    soop () {
-      // this.channel.push('soop', {})
     },
 
     // Starts the countdown to begin a round

@@ -197,7 +197,7 @@ import { Card } from '../models/Card'
 import { Hand } from '../models/Hand'
 import { Channel } from 'phoenix'
 import { AxiosError } from 'axios'
-import { clone, cloneDeep, shuffle } from 'lodash'
+import { clone, shuffle } from 'lodash'
 
 import CardComp from '../components/Card.vue'
 import PileComp from '../components/Pile.vue'
