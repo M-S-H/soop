@@ -238,10 +238,29 @@ const comp = Vue.extend({
   },
 
   computed: {
+    /** List of piles that have not been completted */
     activePiles (): Array<Pile> {
       return this.piles.filter((p: Pile) => p.currentValue !== 10)
     },
 
+    /** List of players to be displayed */
+    displayPlayers (): Array<Player> {
+      if (this.currentRound === 0) {
+        return this.players
+      } else {
+        return this.sortedPlayers
+      }
+    },
+
+    /** Determines if the blur screen should be shown */
+    showScreen (): boolean {
+      return this.showMenu ||
+        this.countdown !== null ||
+        this.gameEnded ||
+        this.showSoopScreen
+    },
+
+    /** Players sorted by their rank */
     sortedPlayers (): Array<Player> {
       return cloneDeep(this.players).sort((a: Player, b: Player) => {
         if (this.playerRanks[a.id] < this.playerRanks[b.id]) {
@@ -254,37 +273,20 @@ const comp = Vue.extend({
       })
     },
 
-    displayPlayers (): Array<Player> {
-      if (this.currentRound === 0) {
-        return this.players
-      } else {
-        return this.sortedPlayers
-      }
+    /** Top flip on hand */
+    topFlip (): Card {
+      return this.playerHand[this.playerHandPosition]
     },
 
     /** Map state and getters */
     ...mapState(['sessionId', 'lastRoundStats', 'sessionState', 'gameEnded', 'currentRound', 'players', 'piles', 'gameOver']),
     ...mapGetters(['allPlayersReady', 'lastRoundWinner', 'player', 'playerHand', 'playerHandPosition', 'playerRow', 'playerStack', 'topPlayer']),
-
-    /** Determines if the blur screen should be shown */
-    showScreen (): boolean {
-      return this.showMenu ||
-        this.countdown !== null ||
-        this.gameEnded ||
-        this.showSoopScreen
-    },
-
-    /** Top flip on hand */
-    topFlip (): Card {
-      return this.playerHand[this.playerHandPosition]
-    }
   },
 
   watch: {
     sessionState (newValue: SessionState, oldValue: SessionState) {
       if (oldValue === 'waiting_for_players' && newValue === 'in_progress') {
         this.startCountdown()
-        // this.sortedPlayers = cloneDeep(this.players)
       } else if (oldValue === 'in_progress' && newValue === 'waiting_for_players') {
         this.showEndOfRound()
       }
@@ -292,7 +294,9 @@ const comp = Vue.extend({
   },
 
   methods: {
-    // Animates a card back to it's original position
+    /**
+     * Animates a card back to it's original position
+     */
     animateBack (elem: HTMLElement) {
       elem.style.transition = 'transform 0.2s ease-in-out'
       elem.style.transform = 'translate(0,0)'
@@ -302,95 +306,18 @@ const comp = Vue.extend({
       }, 201)
     },
 
-    // Decrements the countdown
+    /**
+     * Decrements the countdown
+     */
     dec () {
       (this.countdown as any) -= 1
     },
 
+    /**
+     * Ends the game
+     */
     endGame () {
       this.gameController.endGame()
-    },
-
-    requestShuffle () {
-      console.log('request shuffle')
-    },
-
-    goHome () {
-      this.$router.push('/')
-    },
-
-    showEndOfRound () {
-      // this.currentRound += 1
-      // this.piles = []
-
-      // const roundWinner = this.players.find(p => p.id === results.winner)
-      // if (roundWinner) {
-      //   this.lastRoundStats.winner = roundWinner
-      // }
-
-      // const playerResults = results.player_results.find(p => p.player_id === this.player.id)
-      // if (playerResults) {
-      //   this.lastRoundStats.stack = playerResults.stack
-      //   this.lastRoundStats.cardsPlayed = playerResults.cards_played
-      //   this.lastRoundStats.roundScore = playerResults.round_score
-      // }
-
-      this.showSoopScreen = true
-
-      setTimeout(() => {
-        this.showSoopScreen = false
-
-        setTimeout(() => {
-          this.sortPlayers()
-          // results.player_results.forEach(r => {
-          //   const player = this.players.find(p => p.id === r.player_id)
-          //   if (!player) {
-          //     return
-          //   }
-
-          //   player.score = r.new_score
-          //   player.rank = r.rank
-          //   player.delta = r.delta
-          //   this.sortPlayers()
-          // })
-        }, 300)
-
-        // this.gameOver = gameover
-
-        // if (this.gameOver) {
-        //   const gameWinneer = this.players.find(p => p.id === results.top_player)
-        //   if (gameWinneer) {
-        //     this.gameWinner = gameWinneer
-        //   }
-
-        //   this.sessionState = 'waiting_for_players'
-        //   localStorage.clear()
-        // } else {
-        //   this.sessionState = 'waiting_for_players'
-        //   this.saveState()
-        // }
-      }, 1000)
-    },
-
-    sortPlayers () {
-      const newPlayerRansk = {} as any
-      this.playerRanks = this.players.forEach((p: Player) => {
-        newPlayerRansk[p.id] = p.rank
-      })
-      // this.players
-      // const copy = cloneDeep(this.players).sort((a: Player, b: Player) => {
-      //   if (a.rank < b.rank) {
-      //     return -1
-      //   } else if (b.rank > a.rank) {
-      //     return 1
-      //   } else {
-      //     return 0
-      //   }
-      // })
-
-      this.playerRanks = newPlayerRansk
-
-      // this.sortedPlayers = copy
     },
 
     /**
@@ -398,6 +325,13 @@ const comp = Vue.extend({
      */
     flip () {
       this.gameController.flip()
+    },
+
+    /**
+     * Returns to the home screen
+     */
+    goHome () {
+      this.$router.push('/')
     },
 
     /**
@@ -448,17 +382,46 @@ const comp = Vue.extend({
       }
     },
 
-    // Mark status as ready
+    /**
+     * Sets player's status to ready
+     */
     markReady () {
       this.gameController.markReady()
     },
 
+    /**
+     * Requests a shuffle
+     */
+    requestShuffle () {
+      console.log('request shuffle')
+    },
+
+    /**
+     * Shows the round info
+     */
+    showEndOfRound () {
+      this.showSoopScreen = true
+
+      setTimeout(() => {
+        this.showSoopScreen = false
+
+        setTimeout(() => {
+          this.updateRankMap()
+        }, 300)
+      }, 1000)
+    },
+
+    /**
+     * Instantly moves the element back to it's origin
+     */
     snapBack (elem: HTMLElement) {
       elem.style.transform = 'translate(0,0)'
       elem.classList.remove('dragging')
     },
 
-    // Starts the countdown to begin a round
+    /**
+     * Starts the countdown to begin a round
+     */
     startCountdown (x = 3) {
       this.countdown = x
       setTimeout(() => {
@@ -477,6 +440,18 @@ const comp = Vue.extend({
     startRound () {
       console.log(this.$store.state)
       this.gameController.startRound()
+    },
+
+    /**
+     * Updates the map of players to their rank
+     */
+    updateRankMap () {
+      const newPlayerRansk = {} as any
+      this.playerRanks = this.players.forEach((p: Player) => {
+        newPlayerRansk[p.id] = p.rank
+      })
+
+      this.playerRanks = newPlayerRansk
     }
   },
 
