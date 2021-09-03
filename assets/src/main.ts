@@ -9,6 +9,7 @@ import './styles/application.scss'
 import '@fortawesome/fontawesome-free/css/all.css'
 
 // Setup Apis
+console.log(process.env.VUE_APP_BASE_URL)
 const baseUrl = process.env.VUE_APP_BASE_URL
 const socketUrl = process.env.VUE_APP_SOCKET_URL
 Vue.prototype.$axios = axios.create({

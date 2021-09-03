@@ -15,7 +15,7 @@ config :soup, SoupWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "Pn63K7FZOHEohsG2KrcIO085QKck3FdOZza9Nw5ls2dhDFcoDvVehdnu5X2SlMng",
   render_errors: [view: SoupWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: Soup.PubSub
+  pubsub_server: Soup.PubSub
 
 # Configures Elixir's Logger
 config :logger, :console,

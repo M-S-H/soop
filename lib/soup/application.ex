@@ -33,7 +33,7 @@ defmodule Soup.Application do
 
       {Redix, {Application.get_env(:soup, :redis)[:url], [name: :redix]}},
       {Redlock, readlock_opts},
-      {Phoenix.PubSub, name: MyApp.PubSub}
+      {Phoenix.PubSub, name: Soup.PubSub}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
