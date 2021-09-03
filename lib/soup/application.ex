@@ -15,7 +15,7 @@ defmodule Soup.Application do
       retry_interval_max:         3_000,
       reconnection_interval_base: 500,
       reconnection_interval_max:  5_000,
-    
+
       # you must set odd number of server
       servers: [
         [host: Application.get_env(:soup, :redis)[:host], port: Application.get_env(:soup, :redis)[:port], auth: Application.get_env(:soup, :redis)[:pass]]
@@ -32,7 +32,8 @@ defmodule Soup.Application do
       # {Soup.Worker, arg},
 
       {Redix, {Application.get_env(:soup, :redis)[:url], [name: :redix]}},
-      {Redlock, readlock_opts}
+      {Redlock, readlock_opts},
+      {Phoenix.PubSub, name: Soup.PubSub}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
