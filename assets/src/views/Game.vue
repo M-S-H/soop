@@ -198,12 +198,11 @@ import { Card, CardDragEvent } from '../models/Card'
 import CardComp from '../components/Card.vue'
 import PileComp from '../components/Pile.vue'
 import Spinner from '../components/Spinner.vue'
-import { GameController } from '@/gameController/gameController'
 import OnlineGameController from '@/gameController/onlineGameController'
 import { mapGetters, mapState } from 'vuex'
 import { SessionState } from '@/models/SessionState'
 import { cloneDeep } from 'lodash'
-import LocalGameController from '@/gameController/localGameController'
+import { LocalGameController } from '@/gameController/localGameController'
 
 const comp = Vue.extend({
   name: 'SoupGame',
@@ -211,7 +210,7 @@ const comp = Vue.extend({
   data () {
     return {
       countdown: null as number | null,
-      gameController: null as unknown as GameController,
+      gameController: null as unknown as LocalGameController | OnlineGameController,
       gameType: 'Online' as 'Online' | 'Local',
       gameWinner: null as unknown as Player,
       initialized: false,
@@ -233,10 +232,11 @@ const comp = Vue.extend({
     // Initialize game controller
     // this.gameController = new OnlineGameController(sessionId as string, playerId as string)
     this.gameType = 'Local'
-    this.gameController = new LocalGameController(playerId as string, 5)
+    this.gameController = new LocalGameController(playerId as string, 1)
     this.gameController.initialize().then(() => {
       this.initialized = true
     }, () => {
+      localStorage.clear()
       this.$router.push('/')
     })
   },
@@ -284,7 +284,7 @@ const comp = Vue.extend({
 
     /** Map state and getters */
     ...mapState(['sessionId', 'lastRoundStats', 'sessionState', 'gameEnded', 'currentRound', 'players', 'piles', 'gameOver']),
-    ...mapGetters(['allPlayersReady', 'lastRoundWinner', 'player', 'playerHand', 'playerHandPosition', 'playerRow', 'playerStack', 'topPlayer']),
+    ...mapGetters(['allPlayersReady', 'lastRoundWinner', 'player', 'playerHand', 'playerHandPosition', 'playerRow', 'playerStack', 'topPlayer'])
   },
 
   watch: {

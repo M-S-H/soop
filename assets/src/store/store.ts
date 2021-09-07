@@ -69,6 +69,14 @@ const store: StoreOptions<State> = {
     },
 
     /**
+     * Clears all piles
+     * @param state The state
+     */
+    clearPiles (state: State) {
+      state.piles = []
+    },
+
+    /**
      * Resets the state to defaults
      * @param state The state
      */
@@ -254,8 +262,6 @@ const store: StoreOptions<State> = {
           state.players[playerInd].score = pr.newScore
           state.players[playerInd].rank = pr.rank
           state.players[playerInd].delta = pr.delta
-
-          // Vue.set(state.players[playerInd], )
         }
       })
     }
@@ -310,6 +316,8 @@ const store: StoreOptions<State> = {
       commit('setSessionState', 'waiting_for_players')
 
       commit('incrementCurrentRound')
+
+      commit('clearPiles')
 
       if (this.state.currentRound === this.state.totalRounds) {
         commit('setGameOver')
@@ -382,6 +390,10 @@ const store: StoreOptions<State> = {
      */
     setPlayerHand ({ commit }, hand: Hand) {
       commit('setHand', { playerId: this.state.playerId, hand: hand })
+    },
+
+    setHand ({ commit }, payload) {
+      commit('setHand', payload)
     },
 
     /**

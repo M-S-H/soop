@@ -2,7 +2,7 @@ export interface Player {
   id: string;
   name: string;
   color: string;
-  delta: number;
+  delta: string;
   score: number;
   leader: boolean;
   rank: number;

@@ -2,7 +2,7 @@ export interface PlayerResult {
   playerId: string;
   newScore: number;
   rank: number;
-  delta: number;
+  delta: string;
   stack: number;
   cardsPlayed: number;
   roundScore: number;

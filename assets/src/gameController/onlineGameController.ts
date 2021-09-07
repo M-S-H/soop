@@ -1,5 +1,5 @@
 import { AxiosError, AxiosInstance } from 'axios'
-import { BaseGameController, GameController } from './gameController'
+import { GameController } from './gameController'
 import store from '@/store/store'
 import { Store } from 'vuex'
 import { State } from '@/store/state'
@@ -14,9 +14,12 @@ import { RoundResults } from '@/models/RoundResults'
 /**
  * Game controller that connects to a server
  */
-export default class OnlineGameController extends BaseGameController implements GameController {
+export default class OnlineGameController implements GameController {
   /** The axios instance to make requests */
   private axios: AxiosInstance;
+
+  /** The id of the player */
+  private playerId: string;
 
   /** The Id of the game session */
   private sessionId: string
@@ -24,12 +27,15 @@ export default class OnlineGameController extends BaseGameController implements 
   /** The websocket connection */
   private channel!: Channel
 
+  /** The vuex store */
+  private store: Store<State>
+
   constructor (
     sessionId: string,
     playerId: string
   ) {
-    super(playerId)
-
+    this.store = store
+    this.playerId = playerId
     this.sessionId = sessionId
     this.axios = axiosInstance
   }
@@ -39,6 +45,13 @@ export default class OnlineGameController extends BaseGameController implements 
    */
   endGame () {
     this.channel.push('end_game', {})
+  }
+
+  /**
+   * Flips the current plauyer's hand
+   */
+  flip () {
+    this.store.dispatch('flip', this.playerId)
   }
 
   /**

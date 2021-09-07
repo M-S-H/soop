@@ -37,7 +37,7 @@
             <label class="av-label">Color</label>
 
             <div class="color-picker" :style="{background: createForm.color}" @click="showColorSelection = true"></div>
-            <av-button class="submit-button" @click="createGame" :class="{disabled: !canCreate}">Create!</av-button>
+            <av-button class="submit-button" @click="createLocalGame" :class="{disabled: !canCreate}">Create!</av-button>
           </div>
         </div>
       </transition>
@@ -113,14 +113,32 @@ export default Vue.extend({
   },
 
   methods: {
+    cachePlayerInfo () {
+      const formString = JSON.stringify(this.createForm)
+      localStorage.setItem('soup:localPlayer', formString)
+    },
+
     // Caches a session and player id after a game is joined or created
     cacheSessionIds (sessionId: string, playerId: string) {
       localStorage.setItem('soup:sessionId', sessionId)
       localStorage.setItem('soup:playerId', playerId)
     },
 
+    /**
+     * Creates a local game
+     */
+    createLocalGame () {
+      const sessionId = '10'
+      const playerId = '9'
+      this.cacheSessionIds(sessionId, playerId)
+      this.cachePlayerInfo()
+      setTimeout(() => {
+        this.$router.push('/game')
+      }, 301)
+    },
+
     // Creates a new game session
-    createGame () {
+    createOnlineGame () {
       this.$axios.post('/game', this.createForm).then(resp => {
         this.cacheSessionIds(resp.data.session.id, resp.data.player.id)
         this.active = false
