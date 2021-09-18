@@ -232,7 +232,7 @@ const comp = Vue.extend({
     // Initialize game controller
     // this.gameController = new OnlineGameController(sessionId as string, playerId as string)
     this.gameType = 'Local'
-    this.gameController = new LocalGameController(playerId as string, 1)
+    this.gameController = new LocalGameController(playerId as string, 7)
     this.gameController.initialize().then(() => {
       this.initialized = true
     }, () => {

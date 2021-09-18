@@ -235,6 +235,8 @@ class BotGameController extends BaseLocalGameController implements GameControlle
    */
   beginPlay (): void {
     this.tryPlayStack()
+    this.tryPlayRow()
+    this.tryPlayHand()
   }
 
   /**
@@ -251,16 +253,18 @@ class BotGameController extends BaseLocalGameController implements GameControlle
   }
 
   tryPlayStack () {
+    // console.log(`player ${this.playerId}: stack`)
     this.tryPlayCard(this.store.state.stacks[this.playerId][0])
 
     if (this.store.state.sessionState === 'in_progress') {
       setTimeout(() => {
-        this.tryPlayRow()
-      }, 3000)
+        this.tryPlayStack()
+      }, this.waitTime(1000, 6000))
     }
   }
 
   tryPlayRow () {
+    // console.log(`player ${this.playerId}: stack`)
     for (const card of this.store.state.rows[this.playerId]) {
       if (card != null) {
         this.tryPlayCard(card)
@@ -269,12 +273,13 @@ class BotGameController extends BaseLocalGameController implements GameControlle
 
     if (this.store.state.sessionState === 'in_progress') {
       setTimeout(() => {
-        this.tryPlayHand()
-      }, 3000)
+        this.tryPlayRow()
+      }, this.waitTime(500, 3000))
     }
   }
 
   tryPlayHand () {
+    // console.log(`player ${this.playerId}: stack`)
     this.flip()
     const pos = this.store.state.handPositions[this.playerId]
     const topCard = this.store.state.hands[this.playerId][pos]
@@ -282,8 +287,8 @@ class BotGameController extends BaseLocalGameController implements GameControlle
 
     if (this.store.state.sessionState === 'in_progress') {
       setTimeout(() => {
-        this.tryPlayStack()
-      }, 3000)
+        this.tryPlayHand()
+      }, this.waitTime(500, 2000))
     }
   }
 
@@ -291,24 +296,39 @@ class BotGameController extends BaseLocalGameController implements GameControlle
    * Generates a random number amount of time
    * @returns A random duration of time in ms
    */
-  waitTime (): number {
-    const mu = 3000
-    const rho = 1000
-
+  waitTime (min: number, max: number): number {
     const u1 = Math.random()
     const u2 = Math.random()
 
-    const z1 = Math.sqrt(-2 * Math.log2(u1)) * Math.cos(2 * Math.PI * u2)
-    return (z1 * mu) + rho
+    min = 1000
+    max = 3000
+
+    let z = Math.sqrt(-2 * Math.log2(u1)) * Math.cos(2 * Math.PI * u2)
+    z = z / 10.0 + 0.5
+
+    if (z > 1 || z < 0) {
+      z = this.waitTime(min, max)
+    } else {
+      z *= (max - min) + min
+    }
+
+    return z
   }
 
   // MOVE
   tryPlayCard (card: Card) {
-    console.log('playing: ' + card.id)
+    if (!card) {
+      return
+    }
+    console.log(`player ${card.player} : ${card.id} : ${card.location}`)
     if (card.value === 1) {
       setTimeout(() => {
-        this.startNewPile(card).then()
-      }, this.waitTime())
+        this.startNewPile(card).then(() => {
+          if (this.store.state.stacks[this.playerId].length === 0) {
+            this.soop()
+          }
+        })
+      }, this.waitTime(500, 2000))
     } else {
       for (const pile of this.store.state.piles) {
         if (
@@ -316,8 +336,12 @@ class BotGameController extends BaseLocalGameController implements GameControlle
           pile.color === card.color
         ) {
           setTimeout(() => {
-            this.playCardOnPile(card, pile).then()
-          }, this.waitTime())
+            this.playCardOnPile(card, pile).then(() => {
+              if (this.store.state.stacks[this.playerId].length === 0) {
+                this.soop()
+              }
+            })
+          }, this.waitTime(500, 2000))
           break
         }
       }
@@ -458,7 +482,7 @@ export class LocalGameController extends BaseLocalGameController implements Game
     })
 
     // Shuffle
-    // cards = shuffle(cards)
+    cards = shuffle(cards)
 
     // Assign
     const hand = {

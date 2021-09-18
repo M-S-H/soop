@@ -129,7 +129,7 @@ export default Vue.extend({
      */
     createLocalGame () {
       const sessionId = '10'
-      const playerId = '9'
+      const playerId = '99'
       this.cacheSessionIds(sessionId, playerId)
       this.cachePlayerInfo()
       setTimeout(() => {
