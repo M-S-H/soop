@@ -94,7 +94,7 @@
               <transition-group name="ps">
                 <li class="player-standing" v-for="player in displayPlayers" :key="player.id">
                   <span class="placement" :style="{ background: player.color }">{{ currentRound !== 0 ? player.rank + 1 : '' }}</span>
-                  <span class="player-name">{{ player.name }}</span>
+                  <span class="player-name">{{ player.name }} || {{ player.skillModifier }}</span>
 
                   <span class="player-score" v-if="currentRound >= 1">
                     {{ player.score }}
@@ -314,7 +314,7 @@ const comp = Vue.extend({
      * Decrements the countdown
      */
     dec () {
-      (this.countdown as any) -= 1
+      (this.countdown as number) -= 1
     },
 
     /**
@@ -390,7 +390,7 @@ const comp = Vue.extend({
      * Sets player's status to ready
      */
     markReady () {
-      this.gameController.markReady()
+      (this.gameController as OnlineGameController).markReady()
     },
 
     /**
@@ -450,7 +450,7 @@ const comp = Vue.extend({
      * Updates the map of players to their rank
      */
     updateRankMap () {
-      const newPlayerRansk = {} as any
+      const newPlayerRansk = {} as { [p: string]: number }
       this.playerRanks = this.players.forEach((p: Player) => {
         newPlayerRansk[p.id] = p.rank
       })

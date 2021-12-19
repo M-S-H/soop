@@ -9,6 +9,7 @@ export interface Player {
   ready: boolean;
   stack: number;
   cards_played: number;
+  skillModifier?: number;
 }
 
 // id: "P:" <> IdGen.generate_id(),

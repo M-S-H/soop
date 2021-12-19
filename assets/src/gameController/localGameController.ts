@@ -300,8 +300,11 @@ class BotGameController extends BaseLocalGameController implements GameControlle
     const u1 = Math.random()
     const u2 = Math.random()
 
-    min = 1000
-    max = 3000
+    const player = this.store.state.players.find(p => p.id === this.playerId) as Player
+    const modifier = player.skillModifier ? player.skillModifier : 0
+
+    min = 100 + (modifier * 100)
+    max = 300 + (modifier * 300)
 
     let z = Math.sqrt(-2 * Math.log2(u1)) * Math.cos(2 * Math.PI * u2)
     z = z / 10.0 + 0.5
@@ -518,6 +521,7 @@ export class LocalGameController extends BaseLocalGameController implements Game
         rank: 0,
         ready: true,
         stack: 0,
+        skillModifier: (Math.random() - 0.5) * 0.5,
         // eslint-disable-next-line @typescript-eslint/camelcase
         cards_played: 0
       }
