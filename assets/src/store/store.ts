@@ -30,6 +30,7 @@ const store: StoreOptions<State> = {
     sessionId: '',
     sessionState: 'waiting_for_players',
     stacks: {},
+    totalCardsPlayed: 0,
     topPlayerId: '',
     totalRounds: 0
   },
@@ -74,6 +75,7 @@ const store: StoreOptions<State> = {
      */
     clearPiles (state: State) {
       state.piles = []
+      state.totalCardsPlayed = 0
     },
 
     /**
@@ -248,6 +250,7 @@ const store: StoreOptions<State> = {
     updatePile (state: State, payload: { pileInd: number; pile: Pile }) {
       state.piles[payload.pileInd].topPlayerColor = payload.pile.topPlayerColor
       state.piles[payload.pileInd].currentValue = payload.pile.currentValue
+      state.totalCardsPlayed += 1
     },
 
     /**

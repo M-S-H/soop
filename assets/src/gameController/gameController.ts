@@ -1,8 +1,5 @@
 import { Card } from '@/models/Card'
 import { Pile } from '@/models/Pile'
-import { State } from '@/store/state'
-import store from '@/store/store'
-import { Store } from 'vuex'
 
 export type PlayResponse = 'ok' | 'error'
 

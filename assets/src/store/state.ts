@@ -22,6 +22,7 @@ export interface State {
   sessionId: string;
   sessionState: SessionState;
   stacks: { [id: string]: Array<Card> };
+  totalCardsPlayed: number;
   topPlayerId: string;
   totalRounds: number;
 }

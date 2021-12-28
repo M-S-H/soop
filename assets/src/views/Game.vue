@@ -106,7 +106,7 @@
                   <span v-if="!gameEnded" class="player-status">
                     <spinner v-if="!player.ready"></spinner>
                     <transition name="slide-left">
-                      <div v-if="player.ready" class="ready-icon">
+                      <div v-if="player.ready && gameType === 'Online'" class="ready-icon">
                         <i class="fas fa-check"></i>
                       </div>
                     </transition>
@@ -214,9 +214,10 @@ const comp = Vue.extend({
       gameType: 'Online' as 'Online' | 'Local',
       gameWinner: null as unknown as Player,
       initialized: false,
+      playerRanks: {} as { [key: string]: number },
       showMenu: false,
       showSoopScreen: false,
-      playerRanks: {} as { [key: string]: number }
+      shuffleTimeout: 0
     }
   },
 
@@ -234,6 +235,7 @@ const comp = Vue.extend({
     this.gameType = 'Local'
     this.gameController = new LocalGameController(playerId as string, 7)
     this.gameController.initialize().then(() => {
+      this.updateRankMap()
       this.initialized = true
     }, () => {
       localStorage.clear()
@@ -266,6 +268,7 @@ const comp = Vue.extend({
 
     /** Players sorted by their rank */
     sortedPlayers (): Array<Player> {
+      console.log(this.players)
       return cloneDeep(this.players).sort((a: Player, b: Player) => {
         if (this.playerRanks[a.id] < this.playerRanks[b.id]) {
           return -1
@@ -283,7 +286,7 @@ const comp = Vue.extend({
     },
 
     /** Map state and getters */
-    ...mapState(['sessionId', 'lastRoundStats', 'sessionState', 'gameEnded', 'currentRound', 'players', 'piles', 'gameOver']),
+    ...mapState(['sessionId', 'lastRoundStats', 'sessionState', 'gameEnded', 'currentRound', 'players', 'piles', 'gameOver', 'totalCardsPlayed']),
     ...mapGetters(['allPlayersReady', 'lastRoundWinner', 'player', 'playerHand', 'playerHandPosition', 'playerRow', 'playerStack', 'topPlayer'])
   },
 
@@ -295,6 +298,13 @@ const comp = Vue.extend({
         this.showEndOfRound()
       }
     }
+
+    // totalCardsPlayed () {
+    //   clearTimeout(this.shuffleTimeout)
+    //   setTimeout(() => {
+    //     // this.gameController.attemptShuffle()
+    //   }, 10000)
+    // }
   },
 
   methods: {

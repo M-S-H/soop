@@ -2,13 +2,14 @@ import { Card } from '@/models/Card'
 import { Hand } from '@/models/Hand'
 import { Pile } from '@/models/Pile'
 import { Player } from '@/models/Player'
-import { PlayerResult, RoundResults } from '@/models/RoundResults'
+import { RoundResults } from '@/models/RoundResults'
 import router from '@/router'
 import { State } from '@/store/state'
 import store from '@/store/store'
 import { cloneDeep, shuffle, sortBy } from 'lodash'
 import randomColor from 'randomcolor'
 import { Store } from 'vuex'
+// import BotGameController from './botGameController'
 import { GameController } from './gameController'
 
 export class BaseLocalGameController {
@@ -17,6 +18,12 @@ export class BaseLocalGameController {
 
   /** The vuex store */
   protected store: Store<State>
+
+  /** Cards played when checked */
+  protected cardsPlayedOnCheck = 0
+
+  /** Timeout for shuffle check */
+  protected shuffleTimeout = 0
 
   constructor (playerId: string) {
     this.playerId = playerId
@@ -52,7 +59,7 @@ export class BaseLocalGameController {
   playCardOnPile (card: Card, pile: Pile): Promise<void> {
     return new Promise((resolve, reject) => {
       if (pile.color !== card.color || pile.currentValue !== card.value - 1) {
-        console.log('rejected')
+        // console.log('rejected')
         reject(new Error('invalid card'))
       } else {
         const updatedPile = cloneDeep(pile)
@@ -79,8 +86,6 @@ export class BaseLocalGameController {
       } else {
         card.location = 'row'
         this.store.dispatch('setRowSlot', { playerId: this.playerId, rowNum: rowNum, card: card })
-        // this.channel.push('moved_from_stack', {})
-        // this.handlePlayedCard(card)
         this.saveState()
         resolve()
       }
@@ -147,6 +152,7 @@ export class BaseLocalGameController {
    * Saves the current local state to local storage
    */
   protected saveState () {
+    // console.log('saved')
     const stateString = JSON.stringify(this.store.state)
     localStorage.setItem('soup:state', stateString)
   }
@@ -155,7 +161,10 @@ export class BaseLocalGameController {
    * Signals end of the round
    */
   protected soop () {
+    clearTimeout(this.shuffleTimeout)
+
     this.store.dispatch('setSessionState', 'soopMessage')
+
     const scores = this.calculateRoundScores()
     const currrentSort = sortBy(this.store.state.players.map(p => p.id), id => {
       return this.store.state.players.find(p => p.id === id)?.score
@@ -173,9 +182,9 @@ export class BaseLocalGameController {
         const oldRank = currrentSort.findIndex(id => id === p.id)
         let delta = 'eq'
         if (oldRank > newRank) {
-          delta = 'lt'
-        } else if (newRank > oldRank) {
           delta = 'gt'
+        } else if (newRank > oldRank) {
+          delta = 'lt'
         }
 
         return {
@@ -191,6 +200,12 @@ export class BaseLocalGameController {
     }
 
     this.store.dispatch('endRound', roundResults)
+    if (this.store.state.gameOver) {
+      console.log('over')
+      localStorage.clear()
+    } else {
+      this.saveState()
+    }
   }
 
   /**
@@ -253,10 +268,10 @@ class BotGameController extends BaseLocalGameController implements GameControlle
   }
 
   tryPlayStack () {
-    // console.log(`player ${this.playerId}: stack`)
-    this.tryPlayCard(this.store.state.stacks[this.playerId][0])
-
     if (this.store.state.sessionState === 'in_progress') {
+      // console.log(`player ${this.playerId}: stack`)
+      this.tryPlayCard(this.store.state.stacks[this.playerId][0])
+
       setTimeout(() => {
         this.tryPlayStack()
       }, this.waitTime(1000, 6000))
@@ -264,14 +279,14 @@ class BotGameController extends BaseLocalGameController implements GameControlle
   }
 
   tryPlayRow () {
-    // console.log(`player ${this.playerId}: stack`)
-    for (const card of this.store.state.rows[this.playerId]) {
-      if (card != null) {
-        this.tryPlayCard(card)
-      }
-    }
-
     if (this.store.state.sessionState === 'in_progress') {
+      // console.log(`player ${this.playerId}: stack`)
+      for (const card of this.store.state.rows[this.playerId]) {
+        if (card != null) {
+          this.tryPlayCard(card)
+        }
+      }
+
       setTimeout(() => {
         this.tryPlayRow()
       }, this.waitTime(500, 3000))
@@ -279,13 +294,13 @@ class BotGameController extends BaseLocalGameController implements GameControlle
   }
 
   tryPlayHand () {
-    // console.log(`player ${this.playerId}: stack`)
-    this.flip()
-    const pos = this.store.state.handPositions[this.playerId]
-    const topCard = this.store.state.hands[this.playerId][pos]
-    this.tryPlayCard(topCard)
-
     if (this.store.state.sessionState === 'in_progress') {
+      // console.log(`player ${this.playerId}: stack`)
+      this.flip()
+      const pos = this.store.state.handPositions[this.playerId]
+      const topCard = this.store.state.hands[this.playerId][pos]
+      this.tryPlayCard(topCard)
+
       setTimeout(() => {
         this.tryPlayHand()
       }, this.waitTime(500, 2000))
@@ -323,7 +338,7 @@ class BotGameController extends BaseLocalGameController implements GameControlle
     if (!card) {
       return
     }
-    console.log(`player ${card.player} : ${card.id} : ${card.location}`)
+    // console.log(`player ${card.player} : ${card.id} : ${card.location}`)
     if (card.value === 1) {
       setTimeout(() => {
         this.startNewPile(card).then(() => {
@@ -420,6 +435,7 @@ export class LocalGameController extends BaseLocalGameController implements Game
           sessionState: 'waiting_for_players',
           gameEnded: false,
           gameOver: false,
+          totalCardsPlayed: 0,
           topPlayerId: ''
         }
 
@@ -460,6 +476,7 @@ export class LocalGameController extends BaseLocalGameController implements Game
 
     this.store.dispatch('setSessionState', 'in_progress')
     this.saveState()
+    this.startShuffleCheckTimer()
   }
 
   /**
@@ -530,5 +547,31 @@ export class LocalGameController extends BaseLocalGameController implements Game
     }
 
     return players
+  }
+
+  /**
+   * Starts a time to shuffle when no cards can be played
+   */
+  private startShuffleCheckTimer () {
+    const sto = setTimeout(() => {
+      console.log('checking for shuffle: ' + sto)
+      if (this.store.state.totalCardsPlayed === this.cardsPlayedOnCheck) {
+        // Start shuffle
+        console.log('shuffle needed')
+
+        // Terrible - please refactor
+        Object.keys(this.store.state.hands).forEach(id => {
+          const newHand = shuffle(this.store.state.hands[id])
+          console.log(newHand)
+          this.store.dispatch('setHand', { playerId: id, hand: newHand })
+        })
+      } else {
+        this.cardsPlayedOnCheck = this.store.state.totalCardsPlayed
+      }
+
+      this.startShuffleCheckTimer()
+    }, 10000)
+
+    this.shuffleTimeout = sto
   }
 }
