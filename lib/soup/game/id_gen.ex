@@ -11,6 +11,6 @@ defmodule Soup.Game.IdGen do
   end
 
   def generate_tagged_id(tag) do
-    generate_id <> ":" <> tag
+    generate_id() <> ":" <> tag
   end
 end
