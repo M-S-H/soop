@@ -19,7 +19,7 @@ defmodule Soup.Game.Hand do
       Enum.reduce(["red", "green", "blue", "yellow"], [], fn(color, list) -> list ++ Enum.reduce(1..10, [], fn(value, l) -> [%Card{id: IdGen.generate_id(), value: value, color: color, player: player_id, player_color: player_color} | l] end) end)
       |> List.flatten
       |> Enum.reverse
-      # |> Enum.shuffle
+      |> Enum.shuffle
 
     # Categorize cards
     hand = %Hand{

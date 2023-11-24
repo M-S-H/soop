@@ -64,6 +64,7 @@ defmodule Soup.Game.Player do
   Fetches a player with the given Id from redis
   """
   def get_player(player_id) do
+    IO.puts player_id
     case Redix.command(:redix, ["HGETALL", player_id]) do
       {:ok, player} ->
         %Player{
