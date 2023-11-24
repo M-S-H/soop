@@ -114,7 +114,7 @@ defmodule SoupWeb.SessionChannel do
     players = GameSession.get_all_players(socket.assigns.session_id)
     results = %{
       winner: winning_player.id,
-      top_player: (players |> Enum.sort_by(fn p -> p.score end) |> List.first).id,
+      top_player: (players |> Enum.sort_by(fn p -> p.score end) |> List.last).id,
       player_results: Enum.map(players, fn p -> %{
         player_id: p.id,
         stack: p.stack,

@@ -47,6 +47,7 @@ defmodule Soup.Game.Player do
   """
   def subtract_player_stack(player_id) do
     {:ok, stack} = Redix.command(:redix, ["HGET", player_id, "stack"])
+    IO.puts(String.to_integer(stack) - 1)
     Redix.command(:redix, ["HSET", player_id, "stack", String.to_integer(stack) - 1])
   end
 
